@@ -1,4 +1,7 @@
 import { analytics } from "@/utils/analytics";
+import { BarChart, Card } from "@tremor/react";
+import { ArrowDownRightIcon, ArrowRightIcon, ArrowUpRightIcon } from "lucide-react";
+import ReactCountryFlag from "react-country-flag";
 
 type Props = {
   avgVisitorsPerDay: string;
@@ -17,11 +20,14 @@ const Badge = ({ percentage }: { percentage: number }) => {
   return (
     <span
       className={`${
-        isPositive ? "bg-green-100 text-green-800" : ""
-      } ${isNeutral ? "bg-gray-100 text-gray-800" : ""} ${
-        isNegative ? "bg-red-100 text-red-800" : ""
-      } inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize`}
+        isPositive ? "bg-green-900/25 text-green-400 ring-green-400/25" : ""
+      } ${isNeutral ? "bg-zinc-900/25 text-zinc-400 ring-zinc-400/25" : ""} ${
+        isNegative ? "bg-red-900/25 text-red-400 ring-red-400/25" : ""
+      } inline-flex gap-1 items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset`}
     >
+      {isPositive ? <ArrowUpRightIcon className="h-3 w-3" /> : null}
+      {isNeutral ? <ArrowRightIcon className="h-3 w-3" /> : null}
+      {isNegative ? <ArrowDownRightIcon className="h-3 w-3" /> : null}
       {percentage.toFixed(0)}%
     </span>
   );
@@ -34,39 +40,73 @@ export default function AnalyticsDashboard({
   topCountries,
 }: Props) {
   return (
-    <div>
-      avgVisitorsPerDay: {avgVisitorsPerDay}
-      amtVisitorsToday: {amtVisitorsToday}
-      {timeseriesPageviews ? (
-        <>
-          <h2>Timeseries</h2>
-          <ul>
-            {timeseriesPageviews.map((day) => (
-              <li key={day.date}>
-                {day.date}:{" "}
-                {day.events.reduce(
-                  (acc, curr) => acc + Object.values(curr)[0],
-                  0
-                )}
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : null}
-      {topCountries ? (
-        <>
-          <h2>Top Countries</h2>
-          <ul>
-            {topCountries.map(([country, count]) => (
-              <li key={country}>
-                {country}: {count}
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : null}
+    <div className='flex flex-col gap-6'>
+      <div className='grid w-full mx-auto grid-cols-1 sm:grid-cols-2 gap-6'>
+        <Card className='w-full'>
+          <p className='text-tremor-default text-dark-tremor-content'>
+            Avg. visitors/day
+          </p>
+          <p className='text-3xl text-dark-tremor-content-strong font-semibold'>
+            {avgVisitorsPerDay}
+          </p>
+        </Card>
+        <Card className='w-full'>
+          <p className='flex gap-2.5 items-center text-tremor-default text-dark-tremor-content'>
+            Visitors today
+            <Badge
+              percentage={
+                (amtVisitorsToday / Number(avgVisitorsPerDay) - 1) * 100
+              }
+            />
+          </p>
+          <p className='text-3xl text-dark-tremor-content-strong font-semibold'>
+            {amtVisitorsToday}
+          </p>
+        </Card>
+      </div>
 
-        <Badge percentage={(amtVisitorsToday / Number(avgVisitorsPerDay) - 1) * 100} />
+      <Card className='flex flex-col sm:grid grid-cols-4 gap-6'>
+        <h2 className='w-full text-dark-tremor-content-strong text-center sm:left-left font-semibold text-xl'>
+          This weeks top visitors:
+        </h2>
+        <div className='col-span-3 flex items-center justify-between flex-wrap gap-8'>
+          {topCountries?.map(([countryCode, number]) => {
+            return (
+              <div key={countryCode} className='flex items-center gap-3 text-dark-tremor-content-strong'>
+                <p className='hidden sm:block text-tremor-content'>
+                  {countryCode}
+                </p>
+                <ReactCountryFlag
+                  className='text-5xl sm:text-3xl'
+                  svg
+                  countryCode={countryCode}
+                />
+
+                <p className='text-tremor-content sm:text-dark-tremor-content-strong'>
+                  {number}
+                </p>
+              </div>
+            )
+          })}
+        </div>
+      </Card>
+
+      <Card>
+        {timeseriesPageviews ? (
+          <BarChart
+            allowDecimals={false}
+            showAnimation
+            data={timeseriesPageviews.map((day) => ({
+              name: day.date,
+              Visitors: day.events.reduce((acc, curr) => {
+                return acc + Object.values(curr)[0]!
+              }, 0),
+            }))}
+            categories={['Visitors']}
+            index='name'
+          />
+        ) : null}
+      </Card>
     </div>
-  );
+  )
 }

@@ -48,19 +48,23 @@ export default async function AnalyticsPage() {
     }
   }
 
-  const topCountries = Array.from(topCountiresMap.entries()).sort((a, b) => {
-    if (a[1] > b[1]) return -1;
-    else return 1;
-  }).slice(0, 5);
+  const topCountries = Array.from(topCountiresMap.entries())
+    .sort((a, b) => {
+      if (a[1] > b[1]) return -1;
+      else return 1;
+    })
+    .slice(0, 5);
 
   return (
-    <div className="">
-      <AnalyticsDashboard
-        avgVisitorsPerDay={avgVisitorsPerDay}
-        amtVisitorsToday={amtVisitorsToday}
-        timeseriesPageviews={pageview}
-        topCountries={topCountries}
-      />
+    <div className="min-h-screen w-full py-12 flex justify-center items-center">
+      <div className="relative w-full max-w-6xl mx-auto text-white">
+        <AnalyticsDashboard
+          avgVisitorsPerDay={avgVisitorsPerDay}
+          amtVisitorsToday={amtVisitorsToday}
+          timeseriesPageviews={pageview}
+          topCountries={topCountries}
+        />
+      </div>
     </div>
   );
 }
